@@ -23,3 +23,99 @@ The project focuses on the following objectives:
 * Build SQL views to simplify access to frequently used datasets.
 * Perform exploratory data analysis (EDA) to uncover trends and generate business insights from UAE real estate listings.
 * Apply SQL best practices to produce a scalable, maintainable, and efficient database workflow.
+
+## Skills Demonstrated
+
+This project demonstrates practical experience with the following MySQL concepts and database development techniques:
+
+### Data Preparation
+
+* Data cleaning and standardization
+* Date conversion and formatting
+* Text normalization using string functions
+* Data validation and quality improvement
+
+### Database Design
+
+* Primary keys
+* Staging tables
+* Archive tables
+* Database views
+
+### SQL Programming
+
+* Common Table Expressions (CTEs)
+* Window Functions
+* Aggregate Functions
+* Conditional Logic (`CASE`)
+* Stored Procedures
+* Views
+
+### Database Automation
+
+* Triggers
+* Event Scheduler
+* Automated ETL workflows
+
+### Performance Optimization
+
+* Single-column indexes
+* Composite indexes
+* Query optimization techniques
+
+### Data Analysis
+
+* Exploratory Data Analysis (EDA)
+* Business KPI calculations
+* Ranking and segmentation
+* Property distribution analysis
+* Trend analysis
+* Business reporting
+
+
+## Project Workflow
+
+The project follows a structured ETL and analytics pipeline to transform raw real estate data into reliable business insights.
+
+```text
+                    Raw UAE Real Estate Dataset
+                               │
+                               ▼
+                     Data Preparation & Cleaning
+          • Standardize dates and text values
+          • Remove invalid records
+          • Detect duplicate records
+                               │
+                               ▼
+                   Duplicate Management
+          • Archive deleted records using a trigger
+          • Remove duplicate records
+                               │
+                               ▼
+                   Database Optimization
+          • Create primary key
+          • Build single and composite indexes
+                               │
+                               ▼
+                      ETL Automation
+          • Schedule automated data cleaning
+          • Maintain data quality with Event Scheduler
+                               │
+                               ▼
+                 Analytical Data Modeling
+          • Stored Procedures
+          • Views
+          • Reusable analytical queries
+                               │
+                               ▼
+               Exploratory Data Analysis (EDA)
+          • KPI calculations
+          • Property distribution
+          • Area and city rankings
+          • Price segmentation
+          • Business insights
+```
+
+
+
+
