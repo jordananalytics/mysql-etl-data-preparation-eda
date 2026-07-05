@@ -439,4 +439,51 @@ END $$
 DELIMITER ;
 ```
 
+## Stored Procedures (Business Performance Analysis)
+
+Stored procedures were created to simplify and reuse common business analysis queries. These procedures provide key performance indicators and insights into the UAE real estate market.
+
+```sql
+/*
+Calculate high-level business metrics including:
+
+- Total properties
+- Total property value
+- Highest property price
+- Total average rental value
+*/
+
+DELIMITER $$
+CREATE PROCEDURE PERFOMANCE_INDICATORS()
+BEGIN 
+SELECT  
+COUNT(*) AS Total_properties,
+SUM(price) AS Total_Property_Value,
+ROUND(AVG(price),2) AS Average_price,
+MAX(price) AS Highest_Price,
+SUM(average_rent) AS Total_Average_rent
+FROM uae_real_estate_project;
+END $$
+DELIMITER ;
+```
+
+## Average Property Price by City
+
+This procedure calculates the average property price for each city, providing insights into regional pricing differences.
+
+```sql
+DELIMITER $$
+CREATE PROCEDURE AVERAGE_PROPERTY_PRICE()
+BEGIN
+
+SELECT 
+city,
+ROUND(AVG(price),2) AS Average_Price
+FROM uae_real_estate_project 
+GROUP BY city
+ORDER BY Average_Price;
+
+END $$
+DELIMITER ;
+```
 
