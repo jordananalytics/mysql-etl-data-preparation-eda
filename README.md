@@ -487,3 +487,177 @@ END $$
 DELIMITER ;
 ```
 
+
+## Top 50 Most Expensive Areas
+
+This procedure identifies the top 50 most expensive areas based on the total value of properties listed in each area. It helps highlight high-value real estate zones in the UAE.
+
+```sql
+DELIMITER $$
+CREATE PROCEDURE TOP_50_EXPENSIVE_AREAS()
+
+BEGIN
+
+WITH Agg AS (
+SELECT
+ city,
+ area_name, 
+ SUM(price) AS Total_cost
+FROM uae_real_estate_project
+GROUP BY city, area_name 
+ORDER BY Total_cost
+)
+
+SELECT *,
+DENSE_RANK() OVER(ORDER BY Total_cost DESC) AS `Rank`
+FROM Agg
+LIMIT 50;
+
+END $$
+DELIMITER ;
+```
+
+## Top 50 Cheapest Areas
+
+This procedure ranks areas based on the lowest total property value, helping identify more affordable real estate zones across the UAE.
+
+```sql
+DELIMITER &&
+CREATE PROCEDURE TOP_50_CHEAPEST_AREAS()
+BEGIN
+
+WITH Aggr AS (
+SELECT 
+ city,
+ area_name,
+ SUM(price) AS Total_Value
+FROM uae_real_estate_project
+GROUP BY city, area_name
+)
+
+SELECT *,
+DENSE_RANK() OVER(ORDER BY Total_Value) AS `Rank`
+FROM Aggr
+LIMIT 50;
+
+END &&
+DELIMITER ;
+```
+
+## Property Value by City
+
+This procedure calculates the total number of properties and total property value per city, providing a regional overview of the real estate market.
+
+```sql
+DELIMITER $$
+CREATE PROCEDURE PROPERTY_VALUE()
+BEGIN
+
+SELECT 
+city,
+COUNT(*) AS Total_Properties,
+SUM(price) AS Total_price
+FROM uae_real_estate_project
+GROUP BY city;
+
+END $$
+DELIMITER ;
+```
+
+
+## Property Type Distribution
+
+This procedure calculates the total number of listings for each property type and their percentage distribution across the entire dataset.
+
+```sql
+DELIMITER &&
+CREATE PROCEDURE PROPERTY_TYPE_DISTRIBUTION()
+BEGIN 
+
+WITH Aggr AS(
+SELECT 
+type,
+COUNT(*) AS Listing
+FROM uae_real_estate_project 
+GROUP BY type
+)
+
+SELECT *,
+ROUND(Listing * 100.0 / SUM(Listing) OVER(), 2) AS Distribution
+FROM Aggr;
+
+END &&
+DELIMITER ;
+```
+
+## Area Price Status (Last 30 Days)
+
+This procedure analyzes property price trends over the last 30 days, categorizing areas into price ranges and segments to identify market behavior.
+
+```sql
+DELIMITER $$
+CREATE PROCEDURE AREA_PRICE_STATUS_LAST_30DAYS()
+BEGIN
+
+WITH Base AS (
+SELECT *
+FROM uae_real_estate_project
+WHERE post_date BETWEEN 
+    (SELECT DATE_SUB(MAX(post_date), INTERVAL 30 DAY) FROM uae_real_estate_project)
+    AND (SELECT MAX(post_date) FROM uae_real_estate_project)
+),
+
+Agg AS (
+SELECT 
+city,
+area_name,
+SUM(price) AS Total_price 
+FROM Base
+GROUP BY city, area_name
+),
+
+Final AS (
+SELECT 
+city,
+area_name,
+CASE
+    WHEN Total_price <= 1000000 THEN '< 1M'
+    WHEN Total_price <= 3000000 THEN '1M-3M'
+    WHEN Total_price <= 10000000 THEN '3M-10M'
+    WHEN Total_price <= 50000000 THEN '10M-50M'
+    ELSE '50M+'
+END AS price_range,
+CASE
+    WHEN Total_price <= 1000000 THEN 'Affordable'
+    WHEN Total_price <= 3000000 THEN 'Mid-Range'
+    WHEN Total_price <= 10000000 THEN 'Luxury'
+    WHEN Total_price <= 50000000 THEN 'Ultra Luxury'
+    ELSE 'Elite'
+END AS price_category 
+FROM Agg
+)
+
+SELECT *
+FROM Final;
+
+END $$
+DELIMITER ;
+```
+
+ ## Properties Posted Last Month (View)
+
+This view extracts properties from the most recent complete month in the dataset, allowing quick access to recent market activity.
+
+```sql
+CREATE VIEW Properties_posted_last_month AS
+SELECT *
+FROM uae_real_estate_project
+WHERE YEAR(post_date) = YEAR((SELECT MAX(post_date) FROM uae_real_estate_project))
+AND MONTH(post_date) = MONTH((SELECT MAX(post_date) FROM uae_real_estate_project)) - 1
+ORDER BY post_date;
+```
+
+
+
+
+
