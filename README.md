@@ -136,3 +136,92 @@ ALTER TABLE uae_real_estate
 MODIFY post_date DATE;
 ```
 
+## Standardizing Text Fields
+
+To improve data consistency, text values were standardized by removing unnecessary spaces and converting building names to uppercase. This ensures consistent grouping, filtering, and reporting across the dataset.
+
+```sql
+/*
+Standardize text fields by:
+
+- Removing leading and trailing spaces
+- Converting building names to uppercase
+for consistent grouping
+- Cleaning location and property attributes
+*/ 
+
+UPDATE uae_real_estate_project 
+SET building_name = TRIM(UPPER(building_name)),
+    address = TRIM(address),
+    furnishing = TRIM(furnishing),
+    completion_status = TRIM(completion_status),
+    country = TRIM(country),
+    city = TRIM(city);
+```
+
+## Duplicate Detection (Staging Table)
+
+To ensure data integrity, a staging table was created to detect duplicate records without modifying the original dataset. This approach allows safe identification and analysis of duplicates before removal.
+
+The `ROW_NUMBER()` window function is used to assign a rank to each record within identical groups of property attributes. Records with a rank greater than 1 are considered duplicates.
+
+```sql
+/*
+DUPLICATE DETECTION
+
+A staging table is created to safely identify
+duplicate records without modifying the original
+dataset.
+
+ROW_NUMBER() is used to assign a sequence number
+to records sharing identical property attributes.
+Only the first occurrence is retained.
+*/
+
+CREATE TABLE `uae_real_estate_project` (
+  `price` int DEFAULT NULL,
+  `price_category` text,
+  `type` text,
+  `beds` int DEFAULT NULL,
+  `baths` int DEFAULT NULL,
+  `address` text,
+  `furnishing` text,
+  `completion_status` text,
+  `post_date` date DEFAULT NULL,
+  `average_rent` int DEFAULT NULL,
+  `building_name` text,
+  `year_of_completion` int DEFAULT NULL,
+  `total_parking_spaces` int DEFAULT NULL,
+  `total_floors` int DEFAULT NULL,
+  `total_building_area_sqft` int DEFAULT NULL,
+  `elevators` int DEFAULT NULL,
+  `area_name` text,
+  `city` text,
+  `country` text,
+  `Latitude` double DEFAULT NULL,
+  `Longitude` double DEFAULT NULL,
+  `purpose` text,
+  duplicates int
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO uae_real_estate_project 
+SELECT *,
+       ROW_NUMBER() OVER (
+           PARTITION BY price, price_category, type, beds, baths, address,
+                        furnishing, completion_status, post_date, average_rent,
+                        building_name, year_of_completion, total_parking_spaces,
+                        total_floors, total_building_area_sqft, elevators,
+                        area_name, city, country, Latitude, Longitude, purpose
+           ORDER BY post_date DESC
+       ) AS duplicate
+FROM uae_real_estate;
+```
+
+
+
+
+
+
+
+
+
