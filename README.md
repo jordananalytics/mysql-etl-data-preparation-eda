@@ -218,6 +218,87 @@ FROM uae_real_estate;
 ```
 
 
+## Archive Deleted Records (Audit Table)
+
+To maintain data integrity and create an audit trail, a separate table was created to store deleted records. This ensures that no data is permanently lost and allows recovery or historical tracking if needed.
+
+```sql
+/*
+Create an archive table to store deleted records.
+
+Keeping deleted data provides an audit trail and
+allows recovery if records are removed by mistake.
+*/
+
+CREATE TABLE deleted_records 
+LIKE uae_real_estate_project ;
+
+ALTER TABLE deleted_records 
+DROP COLUMN duplicates ;
+```
+
+## Archive Deleted Records (Audit Table)
+
+To maintain data integrity and create an audit trail, a separate table was created to store deleted records. This ensures that no data is permanently lost and allows recovery or historical tracking if needed.
+
+```sql
+/*
+Create an archive table to store deleted records.
+
+Keeping deleted data provides an audit trail and
+allows recovery if records are removed by mistake.
+*/
+
+CREATE TABLE deleted_records 
+LIKE uae_real_estate_project ;
+
+ALTER TABLE deleted_records 
+DROP COLUMN duplicates ;
+```
+
+
+## Trigger for Deleted Records
+
+A trigger was implemented to automatically store deleted records into the archive table whenever a deletion occurs in the main dataset. This ensures that all removed data is preserved without manual intervention.
+
+```sql
+/*
+Trigger Purpose
+
+Whenever a row is deleted from the staging table,
+the deleted record is automatically copied into
+the deleted_records table.
+
+This preserves historical data for auditing
+and future reference.
+*/
+
+DELIMITER $$
+CREATE TRIGGER Insert_deleted
+AFTER DELETE ON mysql_project.uae_real_estate_project 
+FOR EACH ROW 
+
+INSERT INTO deleted_records (
+ price, price_category, type, beds, baths, address, furnishing,
+ completion_status, post_date, average_rent, building_name,
+ year_of_completion, total_parking_spaces, total_floors,
+ total_building_area_sqft, elevators, area_name, city,
+ country, Latitude, Longitude, purpose
+) 
+VALUES (
+ OLD.price, OLD.price_category, OLD.type, OLD.beds, OLD.baths,
+ OLD.address, OLD.furnishing, OLD.completion_status, OLD.post_date,
+ OLD.average_rent, OLD.building_name, OLD.year_of_completion,
+ OLD.total_parking_spaces, OLD.total_floors,
+ OLD.total_building_area_sqft, OLD.elevators, OLD.area_name,
+ OLD.city, OLD.country, OLD.Latitude, OLD.Longitude,
+ OLD.purpose
+)
+$$ 
+DELIMITER ;
+```
+
+
 
 
 
