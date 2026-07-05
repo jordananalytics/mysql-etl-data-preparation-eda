@@ -125,11 +125,10 @@ date filtering and calculations.
 */
 
 UPDATE uae_real_estate 
-SET post_date = STR_TO_DATE(post_date, '%Y-%m-%d');
+SET post_date = STR_TO_DATE(post_date ,'%Y-%m-%d '  ) ;
 
 ALTER TABLE uae_real_estate 
-MODIFY post_date DATE;
-
+MODIFY  post_date   DATE  ;
 
 
 
