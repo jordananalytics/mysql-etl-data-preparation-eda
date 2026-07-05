@@ -298,11 +298,145 @@ $$
 DELIMITER ;
 ```
 
+## Duplicate Removal (Final Cleaning Step)
+
+After identifying duplicate records using the staging table, duplicates were removed from the main dataset. Only the first occurrence of each record was retained based on the duplicate ranking.
+
+```sql
+-- DUPLICATE DELETION 
+
+SELECT * 
+FROM uae_real_estate_project
+WHERE duplicates > 1 ;
+
+DELETE 
+FROM uae_real_estate_project
+WHERE duplicates > 1 ;
+
+ALTER TABLE uae_real_estate_project
+DROP COLUMN duplicates ;
+```
 
 
+## Primary Key Creation
+
+To uniquely identify each record in the dataset, a surrogate primary key was added. This ensures every property entry can be referenced individually and improves data integrity.
+
+```sql
+/*
+Assign a unique identifier to each property.
+
+The Property_id column acts as the primary key
+and ensures every record can be uniquely referenced.
+*/
+
+ALTER TABLE uae_real_estate_project 
+ADD COLUMN Property_id INT AUTO_INCREMENT PRIMARY KEY FIRST;
+```
+
+## Index Creation (Performance Optimization)
+
+Indexes were created on frequently queried columns to improve query performance, filtering speed, and overall database efficiency. Composite indexing was also used for common query patterns involving multiple columns.
+
+```sql
+/*
+Purpose:
+Create indexes on frequently used columns to improve
+search, filtering, sorting, and ETL performance.
+Indexes were selected based on query patterns rather than
+indexing every column to avoid unnecessary write overhead.
+*/
+
+CREATE INDEX idx_city
+ON uae_real_estate_project(city(100));
+
+CREATE INDEX idx_post_date
+ON uae_real_estate_project(post_date);
+
+CREATE INDEX idx_price
+ON uae_real_estate_project(price);
+
+CREATE INDEX idx_city_area
+ON uae_real_estate_project(city(100), area_name(100));
+```
 
 
+## Automated ETL Process (Event Scheduler)
 
+To maintain data quality continuously, an automated ETL process was created using MySQL Event Scheduler. This process runs every 60 minutes and performs data cleaning, duplicate removal, and removal of invalid records.
 
+This ensures that the dataset remains clean, consistent, and analysis-ready without manual intervention.
+
+```sql
+/*
+AUTOMATED ETL PROCESS
+
+Runs every 60 minutes to maintain data quality by:
+
+1. Removing duplicate records
+2. Standardizing text fields
+3. Deleting invalid records
+
+This minimizes manual maintenance and keeps the
+dataset analysis-ready.
+*/
+
+DELIMITER $$
+CREATE EVENT ETL
+ON SCHEDULE EVERY 60 MINUTE
+DO 
+BEGIN 
+
+-- DUPLICATE DELETION 
+WITH duplicates AS (
+    SELECT
+        Property_id,
+        ROW_NUMBER() OVER (
+            PARTITION BY price, price_category, type, beds, baths,
+                         address, furnishing, completion_status,
+                         post_date, average_rent, building_name,
+                         year_of_completion, total_parking_spaces,
+                         total_floors, total_building_area_sqft,
+                         elevators, area_name, city, country,
+                         Latitude, Longitude, purpose
+            ORDER BY Property_id
+        ) AS rn
+    FROM uae_real_estate_project
+)
+DELETE p
+FROM uae_real_estate_project p
+JOIN duplicates d
+ON p.Property_id = d.Property_id
+WHERE d.rn > 1;
+
+-- TEXT STANDARDISING 
+UPDATE uae_real_estate_project 
+SET building_name = TRIM(UPPER(building_name)),
+    address = TRIM(address),
+    furnishing = TRIM(furnishing),
+    completion_status = TRIM(completion_status),
+    country = TRIM(country),
+    city = TRIM(city);
+
+-- REMOVE INVALID RECORDS 
+DELETE
+FROM uae_real_estate_project
+WHERE price <= 0 
+AND total_floors = 0 
+AND year_of_completion = 0
+AND total_building_area_sqft = 0;
+
+DELETE 
+FROM uae_real_estate_project 
+WHERE average_rent = 0
+AND price <= 0;
+
+DELETE 
+FROM uae_real_estate_project
+WHERE price <= 0;
+
+END $$
+DELIMITER ;
+```
 
 
