@@ -118,4 +118,18 @@ The project follows a structured ETL and analytics pipeline to transform raw rea
 
 
 
+/*
+Convert the post_date column from text format
+to a proper DATE data type to enable accurate
+date filtering and calculations.
+*/
+
+UPDATE uae_real_estate 
+SET post_date = STR_TO_DATE(post_date, '%Y-%m-%d');
+
+ALTER TABLE uae_real_estate 
+MODIFY post_date DATE;
+
+
+
 
