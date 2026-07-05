@@ -118,6 +118,11 @@ The project follows a structured ETL and analytics pipeline to transform raw rea
 
 
 
+## Standardizing Date Formats
+
+The `post_date` column was originally stored as text. To enable accurate filtering, sorting, and date-based analysis, it was converted to the MySQL `DATE` data type.
+
+```sql
 /*
 Convert the post_date column from text format
 to a proper DATE data type to enable accurate
@@ -128,7 +133,6 @@ UPDATE uae_real_estate
 SET post_date = STR_TO_DATE(post_date ,'%Y-%m-%d '  ) ;
 
 ALTER TABLE uae_real_estate 
-MODIFY  post_date   DATE  ;
-
-
+MODIFY post_date DATE;
+```
 
